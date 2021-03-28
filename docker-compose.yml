@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  hrbot:
+    image: prettybaka/hrbot:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    restart: always
+    volumes:
+      - ./logs:/app/logs
+      - ./Configuration:/app/Configuration
+    ports:
+      - "127.0.0.1:13337:4430"

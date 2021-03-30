@@ -44,11 +44,20 @@ namespace HrBot.Controllers
             {
                 if (update.Type == UpdateType.Message)
                 {
+                    _logger.LogInformation(
+                        "A message from received from {ChatId} {MessageId} {UserId}",
+                        update.Message.Chat.Id,
+                        update.Message.MessageId,
+                        update.Message.From.Id);
                     await _vacancyReposter.TryRepost(update.Message);
-                }
-
-                if (update.Type == UpdateType.EditedMessage)
+                } 
+                else if (update.Type == UpdateType.EditedMessage)
                 {
+                    _logger.LogInformation(
+                        "An edited message received from {ChatId} {MessageId} {UserId}",
+                        update.EditedMessage.Chat.Id,
+                        update.EditedMessage.MessageId,
+                        update.EditedMessage.From.Id);
                     await _vacancyReposter.TryEdit(update.EditedMessage);
                 }
             }
@@ -62,6 +71,11 @@ namespace HrBot.Controllers
 
         private bool IsChatAllowed(Update update)
         {
+            if (!_appSettings.RepostOnlyFromChatIdsEnabled)
+            {
+                return true;
+            }
+
             var allowedChatIds = _appSettings.RepostOnlyFromChatIds;
 
             var isNewMessageAllowed = update.Message != null 

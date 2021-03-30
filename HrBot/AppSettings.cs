@@ -10,6 +10,8 @@ namespace HrBot
 
         public long RepostToChannelId { get; set; }
 
+        public bool RepostOnlyFromChatIdsEnabled { get; set; } = false;
+
         public IReadOnlyCollection<long> RepostOnlyFromChatIds { get; set; } = default!;
     }
 }

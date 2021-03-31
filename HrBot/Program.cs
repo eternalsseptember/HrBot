@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
+using HrBot.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -30,6 +32,7 @@ namespace HrBot
                         config.AddJsonFile($"Configuration/appsettings.{environment}.json", true, true);
                     })
                 .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>())
+                .ConfigureServices(x => x.AddHostedService<RepostedMessagesMonitoringHostedService>())
                 .ConfigureLogging(
                     (context, builder) =>
                     {

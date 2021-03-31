@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
@@ -14,17 +15,20 @@ namespace HrBot.Services
         private readonly AppSettings _settings;
         private readonly ITelegramBotClient _telegramBot;
         private readonly IVacancyAnalyzer _vacancyAnalyzer;
+        private readonly IRepostedMessagesStorage _repostedMessagesStorage;
 
         public VacancyReposter(
             IVacancyAnalyzer vacancyAnalyzer,
             ITelegramBotClient telegramBot,
             AppSettings settings,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            IRepostedMessagesStorage repostedMessagesStorage)
         {
             _vacancyAnalyzer = vacancyAnalyzer;
             _telegramBot = telegramBot;
             _settings = settings;
             _memoryCache = memoryCache;
+            _repostedMessagesStorage = repostedMessagesStorage;
         }
 
         public async Task TryRepost(Message message)
@@ -50,6 +54,11 @@ namespace HrBot.Services
             _memoryCache.Set(
                 GetKey(message),
                 new ChatMessageId(repostedMessage.Chat.Id, repostedMessage.MessageId));
+
+            _repostedMessagesStorage.Add(
+                new ChatMessageId(message.Chat.Id, message.MessageId),
+                new ChatMessageId(repostedMessage.Chat.Id, repostedMessage.MessageId),
+                DateTimeOffset.Now);
         }
 
         public async Task TryEdit(Message message)

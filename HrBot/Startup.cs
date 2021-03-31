@@ -35,6 +35,8 @@ namespace HrBot
             services.AddTransient<IVacancyReposter, VacancyReposter>();
             services.AddTransient<IVacancyAnalyzer, VacancyAnalyzer>();
             services.AddMemoryCache();
+            services.AddSingleton<IRepostedMessagesStorage, RepostedMessagesStorage>();
+            services.AddTransient<IRepostedMessagesMonitoringService, RepostedMessagesMonitoringService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

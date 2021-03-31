@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using HrBot.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -15,17 +14,14 @@ namespace HrBot.Controllers
     public class UpdateController : ControllerBase
     {
         private readonly ILogger<UpdateController> _logger;
-        private readonly ITelegramBotClient _telegramBot;
         private readonly IVacancyReposter _vacancyReposter;
         private readonly AppSettings _appSettings;
 
         public UpdateController(
-            ITelegramBotClient telegramBot,
             ILogger<UpdateController> logger,
             IVacancyReposter vacancyReposter,
             AppSettings appSettings)
         {
-            _telegramBot = telegramBot;
             _logger = logger;
             _vacancyReposter = vacancyReposter;
             _appSettings = appSettings;

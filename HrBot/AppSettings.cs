@@ -13,5 +13,7 @@ namespace HrBot
         public bool RepostOnlyFromChatIdsEnabled { get; set; } = false;
 
         public IReadOnlyCollection<long> RepostOnlyFromChatIds { get; set; } = default!;
+
+        public long TechnicalChatId { get; set; } 
     }
 }

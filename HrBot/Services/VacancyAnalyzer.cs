@@ -17,19 +17,22 @@ namespace HrBot.Services
             "#parttime", "#fulltime"
         };
 
-        public bool IsVacancy(Message message)
+
+        public MessageTypes GetMessageType(Message message)
         {
             var tags = GetTags(message);
+            foreach (var tag in tags)
+                switch (tag)
+                {
+                    case VacancyTag:
+                        return MessageTypes.Vacancy;
+                    case ResumeTag:
+                        return MessageTypes.Resume;
+                }
 
-            return tags.Any(x => x == VacancyTag);
+            return MessageTypes.Chat;
         }
 
-        public bool IsResume(Message message)
-        {
-            var tags = GetTags(message);
-
-            return tags.Any(x => x == ResumeTag);
-        }
 
         public IEnumerable<VacancyError> GetVacancyErrors(Message message)
         {
@@ -45,13 +48,16 @@ namespace HrBot.Services
             }
         }
 
-        private static IReadOnlyCollection<string> GetTags(Message message)
+
+        private static List<string> GetTags(Message message)
         {
-            return message.EntityValues?
+            if (message.EntityValues is null)
+                return new List<string>(0);
+
+            return message.EntityValues
                 .Where(x => x.StartsWith("#"))
                 .Select(x => x.ToLowerInvariant())
-                .ToArray()
-                ?? Array.Empty<string>();
+                .ToList();
         }
     }
 }

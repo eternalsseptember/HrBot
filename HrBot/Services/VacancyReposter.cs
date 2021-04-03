@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HrBot.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -9,7 +10,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace HrBot.Services
 {
-    internal class VacancyReposter : IVacancyReposter
+    public class VacancyReposter : IVacancyReposter
     {
         private readonly IMemoryCache _memoryCache;
         private readonly AppSettings _settings;
@@ -33,15 +34,11 @@ namespace HrBot.Services
 
         public async Task TryRepost(Message message)
         {
-            var isVacancy = _vacancyAnalyzer.IsVacancy(message);
-            var isResume = _vacancyAnalyzer.IsResume(message);
-
-            if (!isVacancy && !isResume)
-            {
+            var messageType = _vacancyAnalyzer.GetMessageType(message);
+            if (messageType == MessageTypes.Chat)
                 return;
-            }
 
-            if (isVacancy)
+            if (messageType == MessageTypes.Vacancy)
             {
                 await SendVacancyWarnings(message);
             }
@@ -63,15 +60,11 @@ namespace HrBot.Services
 
         public async Task TryEdit(Message message)
         {
-            var isVacancy = _vacancyAnalyzer.IsVacancy(message);
-            var isResume = _vacancyAnalyzer.IsResume(message);
-
-            if (!isVacancy && !isResume)
-            {
+            var messageType = _vacancyAnalyzer.GetMessageType(message);
+            if (messageType == MessageTypes.Chat)
                 return;
-            }
 
-            if (isVacancy)
+            if (messageType == MessageTypes.Vacancy)
             {
                 await TryDeleteWarningMessage(message);
             }

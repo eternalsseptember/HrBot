@@ -33,9 +33,9 @@ namespace HrBot
             services.AddTransient<IRepostedMessagesMonitoringService, RepostedMessagesMonitoringService>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<AppSettings> appSettings)
+        public void Configure(IApplicationBuilder app, IOptions<AppSettings> appSettingsOptions)
         {
-            app.UseTelegramBotWebHook();
+            app.UseTelegramBotWebHook(appSettingsOptions.Value.WebHookAddress);
             app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints => endpoints.MapControllers());

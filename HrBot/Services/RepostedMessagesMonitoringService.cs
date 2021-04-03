@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using HrBot.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 
 namespace HrBot.Services
@@ -15,12 +16,12 @@ namespace HrBot.Services
 
         public RepostedMessagesMonitoringService(
             IRepostedMessagesStorage storage,
-            AppSettings settings,
+            IOptions<AppSettings> settings,
             ITelegramBotClient telegram,
             ILogger<RepostedMessagesMonitoringService> logger)
         {
             _storage = storage;
-            _settings = settings;
+            _settings = settings.Value;
             _telegram = telegram;
             _logger = logger;
         }

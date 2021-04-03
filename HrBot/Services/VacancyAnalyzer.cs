@@ -34,18 +34,29 @@ namespace HrBot.Services
         }
 
 
-        public IEnumerable<VacancyError> GetVacancyErrors(Message message)
+        public List<string> GetVacancyErrors(Message message)
         {
+            var errors = new List<string>();
             var tags = GetTags(message);
 
             if (!tags.Any(x => _placeOfWorkTag.Contains(x)))
-            {
-                yield return new VacancyError(ErrorType.WithoutTag, "#удалёнка или #офис");
-            }
+                errors.Add("#удалёнка или #офис");
+            
             if (!tags.Any(x => _employmentTypeTag.Contains(x)))
-            {
-                yield return new VacancyError(ErrorType.WithoutTag, "#parttime или #fulltime");
-            }
+                errors.Add("#parttime или #fulltime");
+
+            return errors;
+        }
+
+
+        public bool HasMissingTags(Message message)
+        {
+            var tags = GetTags(message);
+            
+            if (!tags.Any(x => _placeOfWorkTag.Contains(x)))
+                return true;
+            
+            return !tags.Any(x => _employmentTypeTag.Contains(x));
         }
 
 

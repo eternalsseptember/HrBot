@@ -14,28 +14,22 @@ namespace HrBot.Controllers
     [Route("api/hrupdate")]
     public class UpdateController : ControllerBase
     {
-        private readonly ILogger<UpdateController> _logger;
-        private readonly IVacancyReposter _vacancyReposter;
-        private readonly AppSettings _appSettings;
-
         public UpdateController(
             ILogger<UpdateController> logger,
-            IVacancyReposter vacancyReposter,
-            IOptions<AppSettings> appSettings)
+            IOptions<AppSettings> appSettings,
+            IVacancyReposter vacancyReposter)
         {
+            _appSettings = appSettings.Value;
             _logger = logger;
             _vacancyReposter = vacancyReposter;
-            _appSettings = appSettings.Value;
         }
 
-        // POST api/update
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Update update)
         {
             if (!IsChatAllowed(update))
-            {
                 return Ok();
-            }
 
             try
             {
@@ -47,7 +41,7 @@ namespace HrBot.Controllers
                         update.Message.MessageId,
                         update.Message.From.Id);
                     await _vacancyReposter.RepostToChannel(update.Message);
-                } 
+                }
                 else if (update.Type == UpdateType.EditedMessage)
                 {
                     _logger.LogInformation(
@@ -66,28 +60,26 @@ namespace HrBot.Controllers
             return Ok();
         }
 
+
         private bool IsChatAllowed(Update update)
         {
             if (!_appSettings.RepostOnlyFromChatIdsEnabled)
-            {
                 return true;
-            }
 
             var allowedChatIds = _appSettings.RepostOnlyFromChatIds;
 
-            var isNewMessageAllowed = update.Message != null 
-                                      && allowedChatIds.Contains(update.Message.Chat.Id);
+            var isNewMessageAllowed = update.Message != null
+                && allowedChatIds.Contains(update.Message.Chat.Id);
 
-            var isEditedMessageAllowed = update.EditedMessage != null 
-                                         && allowedChatIds.Contains(update.EditedMessage.Chat.Id);
+            var isEditedMessageAllowed = update.EditedMessage != null
+                && allowedChatIds.Contains(update.EditedMessage.Chat.Id);
 
             return isNewMessageAllowed || isEditedMessageAllowed;
         }
 
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return Ok("Ok!");
-        }
+
+        private readonly AppSettings _appSettings;
+        private readonly ILogger<UpdateController> _logger;
+        private readonly IVacancyReposter _vacancyReposter;
     }
 }

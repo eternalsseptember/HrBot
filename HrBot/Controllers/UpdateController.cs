@@ -46,7 +46,7 @@ namespace HrBot.Controllers
                         update.Message.Chat.Id,
                         update.Message.MessageId,
                         update.Message.From.Id);
-                    await _vacancyReposter.TryRepost(update.Message);
+                    await _vacancyReposter.RepostToChannel(update.Message);
                 } 
                 else if (update.Type == UpdateType.EditedMessage)
                 {
@@ -55,7 +55,7 @@ namespace HrBot.Controllers
                         update.EditedMessage.Chat.Id,
                         update.EditedMessage.MessageId,
                         update.EditedMessage.From.Id);
-                    await _vacancyReposter.TryEdit(update.EditedMessage);
+                    await _vacancyReposter.Edit(update.EditedMessage);
                 }
             }
             catch (Exception e)

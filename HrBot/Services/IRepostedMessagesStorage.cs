@@ -8,7 +8,7 @@ namespace HrBot.Services
     {
         IReadOnlyCollection<RepostedMessage> GetAll();
 
-        void Add(ChatMessageId from, ChatMessageId to, DateTimeOffset when);
+        void Add(MessageInfo from, MessageInfo to, DateTimeOffset when);
 
         void Remove(RepostedMessage repostedMessage);
     }

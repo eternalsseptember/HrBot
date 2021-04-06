@@ -8,7 +8,7 @@ namespace HrBot.Services
 {
     public class RepostedMessagesStorage : IRepostedMessagesStorage
     {
-        private readonly ConcurrentDictionary<ChatMessageId, RepostedMessage> _storage = new();
+        private readonly ConcurrentDictionary<MessageInfo, RepostedMessage> _storage = new();
         private readonly TimeSpan _storageLimit = TimeSpan.FromHours(2);
 
         public IReadOnlyCollection<RepostedMessage> GetAll()
@@ -22,7 +22,7 @@ namespace HrBot.Services
             return _storage.Values.ToList();
         }
 
-        public void Add(ChatMessageId from, ChatMessageId to, DateTimeOffset when)
+        public void Add(MessageInfo from, MessageInfo to, DateTimeOffset when)
         {
             _storage.TryAdd(from, new RepostedMessage(from, to, when));
         }

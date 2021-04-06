@@ -5,8 +5,7 @@ namespace HrBot.Services
 {
     public interface IVacancyReposter
     {
-        Task TryRepost(Message message);
-
-        Task TryEdit(Message message);
+        Task Edit(Message message);
+        Task RepostToChannel(Message message);
     }
 }

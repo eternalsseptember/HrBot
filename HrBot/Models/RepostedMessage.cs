@@ -3,5 +3,5 @@ using HrBot.Services;
 
 namespace HrBot.Models
 {
-    public record RepostedMessage(ChatMessageId From, ChatMessageId To, DateTimeOffset When);
+    public record RepostedMessage(MessageInfo From, MessageInfo To, DateTimeOffset When);
 }

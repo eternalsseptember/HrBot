@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using HrBot.Services;
@@ -15,7 +14,9 @@ namespace HrBot
             Configuration = configuration;
         }
 
+
         public IConfiguration Configuration { get; }
+
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -26,12 +27,15 @@ namespace HrBot
 
             services.AddSingleton<ITelegramBotClient>(_ => new TelegramBotClient(Configuration["Configuration:BotToken"]));
 
+            services.AddTransient<IMessageAnalyzer, MessageAnalyzer>();
             services.AddTransient<IVacancyReposter, VacancyReposter>();
             services.AddTransient<IVacancyAnalyzer, VacancyAnalyzer>();
-            services.AddMemoryCache();
             services.AddSingleton<IRepostedMessagesStorage, RepostedMessagesStorage>();
             services.AddTransient<IRepostedMessagesMonitoringService, RepostedMessagesMonitoringService>();
+
+            services.AddMemoryCache();
         }
+
 
         public void Configure(IApplicationBuilder app, IOptions<AppSettings> appSettingsOptions)
         {

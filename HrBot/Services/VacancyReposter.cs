@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using HrBot.Configuration;
 using HrBot.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -14,14 +15,14 @@ namespace HrBot.Services
     {
         public VacancyReposter(
             IMemoryCache memoryCache,
-            IOptions<AppSettings> settings,
+            IOptions<ChatOptions> options,
             ITelegramBotClient telegramBot,
             IMessageAnalyzer messageAnalyzer,
             IRepostedMessagesStorage repostedMessagesStorage,
             IVacancyAnalyzer vacancyAnalyzer)
         {
             _memoryCache = memoryCache;
-            _settings = settings.Value;
+            _options = options.Value;
             _telegramBot = telegramBot;
             _messageAnalyzer = messageAnalyzer;
             _repostedMessagesStorage = repostedMessagesStorage;
@@ -73,7 +74,7 @@ namespace HrBot.Services
 
         private async Task RepostMessage(Message message)
         {
-            var repostedMessage = await _telegramBot.SendTextMessageAsync(_settings.RepostToChannelId, GetMessageWithAuthor(message), ParseMode.Html);
+            var repostedMessage = await _telegramBot.SendTextMessageAsync(_options.ChannelToRepostId, GetMessageWithAuthor(message), ParseMode.Html);
 
             _memoryCache.Set(GetMessageKey(message), new MessageInfo(repostedMessage.Chat.Id, repostedMessage.MessageId));
 
@@ -130,7 +131,7 @@ namespace HrBot.Services
         private readonly IMemoryCache _memoryCache;
         private readonly IMessageAnalyzer _messageAnalyzer;
         private readonly IRepostedMessagesStorage _repostedMessagesStorage;
-        private readonly AppSettings _settings;
+        private readonly ChatOptions _options;
         private readonly ITelegramBotClient _telegramBot;
         private readonly IVacancyAnalyzer _vacancyAnalyzer;
     }

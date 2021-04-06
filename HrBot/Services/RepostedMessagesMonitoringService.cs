@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using HrBot.Configuration;
 using HrBot.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -11,12 +12,12 @@ namespace HrBot.Services
     {
         public RepostedMessagesMonitoringService(
             ILogger<RepostedMessagesMonitoringService> logger,
-            IOptions<AppSettings> settings,
+            IOptions<ChatOptions> options,
             ITelegramBotClient telegram,
             IRepostedMessagesStorage storage)
         {
             _logger = logger;
-            _settings = settings.Value;
+            _options = options.Value;
             _storage = storage;
             _telegram = telegram;
         }
@@ -54,7 +55,7 @@ namespace HrBot.Services
             // Again, can't change it without debugging, probably checking message existence is enough 
             try
             {
-                var forwarded = await _telegram.ForwardMessageAsync(_settings.TechnicalChatId, repostedMessage.From.ChatId, repostedMessage.From.MessageId,
+                var forwarded = await _telegram.ForwardMessageAsync(_options.TechnicalChatId, repostedMessage.From.ChatId, repostedMessage.From.MessageId,
                     disableNotification: true);
                 await _telegram.DeleteMessageAsync(forwarded.Chat.Id, forwarded.MessageId);
 
@@ -70,7 +71,7 @@ namespace HrBot.Services
 
 
         private readonly ILogger<RepostedMessagesMonitoringService> _logger;
-        private readonly AppSettings _settings;
+        private readonly ChatOptions _options;
         private readonly IRepostedMessagesStorage _storage;
         private readonly ITelegramBotClient _telegram;
     }

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
+using HrBot.Configuration;
 using HrBot.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -16,10 +16,10 @@ namespace HrBot.Controllers
     {
         public UpdateController(
             ILogger<UpdateController> logger,
-            IOptions<AppSettings> appSettings,
+            IOptions<ChatOptions> options,
             IVacancyReposter vacancyReposter)
         {
-            _appSettings = appSettings.Value;
+            _options = options.Value;
             _logger = logger;
             _vacancyReposter = vacancyReposter;
         }
@@ -28,7 +28,7 @@ namespace HrBot.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Update update)
         {
-            if (!IsChatAllowed(update))
+            if (!IsMessageAllowed(update))
                 return Ok();
 
             try
@@ -61,12 +61,12 @@ namespace HrBot.Controllers
         }
 
 
-        private bool IsChatAllowed(Update update)
+        private bool IsMessageAllowed(Update update)
         {
-            if (!_appSettings.RepostOnlyFromChatIdsEnabled)
+            if (!_options.RepostOnlyFromAllowedChats)
                 return true;
 
-            var allowedChatIds = _appSettings.RepostOnlyFromChatIds;
+            var allowedChatIds = _options.AllowedChatIds;
 
             var isNewMessageAllowed = update.Message != null
                 && allowedChatIds.Contains(update.Message.Chat.Id);
@@ -78,7 +78,7 @@ namespace HrBot.Controllers
         }
 
 
-        private readonly AppSettings _appSettings;
+        private readonly ChatOptions _options;
         private readonly ILogger<UpdateController> _logger;
         private readonly IVacancyReposter _vacancyReposter;
     }

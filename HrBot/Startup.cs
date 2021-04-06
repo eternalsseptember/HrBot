@@ -1,3 +1,4 @@
+using HrBot.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +24,8 @@ namespace HrBot
             services.AddControllers().AddNewtonsoftJson();
             services.AddOptions();
 
-            services.Configure<AppSettings>(Configuration.GetSection("Configuration"));
+            services.Configure<BotOptions>(Configuration.GetSection("BotOptions"));
+            services.Configure<ChatOptions>(Configuration.GetSection("ChatOptions"));
 
             services.AddSingleton<ITelegramBotClient>(_ => new TelegramBotClient(Configuration["Configuration:BotToken"]));
 
@@ -37,7 +39,7 @@ namespace HrBot
         }
 
 
-        public void Configure(IApplicationBuilder app, IOptions<AppSettings> appSettingsOptions)
+        public void Configure(IApplicationBuilder app, IOptions<BotOptions> appSettingsOptions)
         {
             app.UseTelegramBotWebHook(appSettingsOptions.Value.WebHookAddress);
             app.UseRouting();

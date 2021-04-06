@@ -12,29 +12,24 @@ namespace HrBot
 {
     public class Program
     {
-        private const string FileTemplate
-            = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] <s:{SourceContext}> {Message}{NewLine}{Exception}";
-
-        private const string ConsoleTemplate
-            = "[{Timestamp:HH:mm:ss} {Level:u3}] <s:{SourceContext}> {Message:lj}{NewLine}{Exception}";
-
         public static async Task Main(string[] args)
             => await CreateHostBuilder(args).Build().RunAsync();
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+
+        public static IHostBuilder CreateHostBuilder(string[] args)
+            => Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration(
                     (hostingContext, config) =>
                     {
                         var environment = hostingContext.HostingEnvironment.EnvironmentName;
 
-                        config.AddJsonFile("Configuration/appsettings.json", false, true);
-                        config.AddJsonFile($"Configuration/appsettings.{environment}.json", true, true);
+                        config.AddJsonFile("appsettings.json", false, true);
+                        config.AddJsonFile($"appsettings.{environment}.json", true, true);
                     })
                 .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>())
                 .ConfigureServices(x => x.AddHostedService<RepostedMessagesMonitoringHostedService>())
                 .ConfigureLogging(
-                    (context, builder) =>
+                    (_, builder) =>
                     {
                         builder.ClearProviders();
                         builder.AddSerilog(
@@ -59,5 +54,13 @@ namespace HrBot
                                     restrictedToMinimumLevel: LogEventLevel.Information)
                                 .CreateLogger());
                     });
+        
+        
+        private const string FileTemplate
+            = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] <s:{SourceContext}> {Message}{NewLine}{Exception}";
+
+
+        private const string ConsoleTemplate
+            = "[{Timestamp:HH:mm:ss} {Level:u3}] <s:{SourceContext}> {Message:lj}{NewLine}{Exception}";
     }
 }

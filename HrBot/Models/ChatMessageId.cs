@@ -1,4 +1,4 @@
-﻿namespace HrBot.Services
+﻿namespace HrBot.Models
 {
     public class ChatMessageId
     {

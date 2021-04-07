@@ -25,20 +25,29 @@ namespace HrBot.Services
 
         public async Task RemoveDeletedMessagesFromChannel()
         {
-            var repostedMessages = _storage.Get();
-
-            foreach (var repostedMessage in repostedMessages)
+            try
             {
-                // Is this correct? The method starts on timer already, also greater number of messages lead to slower response. Potential slow-down point
-                await Task.Delay(1000);
-                var isDeleted = await IsDeletedFromChat(repostedMessage);
-                if (!isDeleted)
-                    continue;
+                var repostedMessages = _storage.Get();
 
-                await Remove(repostedMessage);
-                _storage.Remove(repostedMessage);
+                foreach (var repostedMessage in repostedMessages)
+                {
+                    // https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this
+                    // According the documentation a bot allows to make about 20 requests per minute
+                    await Task.Delay(3000);
 
-                _logger.LogInformation("Message from {ChatId} {MessageId} was deleted", repostedMessage.From.ChatId, repostedMessage.From.MessageId);
+                    var isDeleted = await IsDeletedFromChat(repostedMessage);
+                    if (!isDeleted)
+                        continue;
+
+                    await Remove(repostedMessage);
+                    _storage.Remove(repostedMessage);
+
+                    _logger.LogInformation("Message from {ChatId} {MessageId} was deleted", repostedMessage.From.ChatId, repostedMessage.From.MessageId);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "An exception is occurred during message monitoring: {Message}", e.Message);
             }
         }
 
@@ -63,7 +72,7 @@ namespace HrBot.Services
             }
             catch (Exception exception) when (exception.Message == "Bad Request: message to forward not found")
             {
-                // Swallow deleted exception 
+                // Swallow the exception when a message has deleted already 
             }
 
             return true;

@@ -16,7 +16,8 @@ namespace HrBot.Services
 
         public List<RepostedMessageInfo> Get()
         {
-            var toDelete = _storage.Values.Where(x => x.When < DateTimeOffset.Now.Add(-_storageLimit)).ToList();
+            var toDelete = _storage.Values
+                .Where(x => x.When < DateTimeOffset.Now.Add(-_storageLimit)).ToList();
             foreach (var message in toDelete)
                 _storage.TryRemove(message.From, out _);
 
@@ -31,5 +32,6 @@ namespace HrBot.Services
 
 
         private readonly ConcurrentDictionary<MessageInfo, RepostedMessageInfo> _storage = new();
-        private readonly TimeSpan _storageLimit = TimeSpan.FromHours(2);}
+        private readonly TimeSpan _storageLimit = TimeSpan.FromHours(2);
+    }
 }

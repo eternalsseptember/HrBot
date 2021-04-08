@@ -2,51 +2,52 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace HrBot.Services
 {
-    public class RepostedMessagesMonitoringHostedService : IHostedService
+    public class RepostedMessagesMonitoringHostedService : IHostedService, IDisposable
     {
-        private readonly ILogger<RepostedMessagesMonitoringHostedService> _logger;
-        private readonly IRepostedMessagesMonitoringService _repostedMessagesMonitoringService;
-        private readonly Timer _timer;
-
-        public RepostedMessagesMonitoringHostedService(
-            IRepostedMessagesMonitoringService repostedMessagesMonitoringService,
-            ILogger<RepostedMessagesMonitoringHostedService> logger)
+        public RepostedMessagesMonitoringHostedService(IRepostedMessagesMonitoringService repostedMessagesMonitoringService)
         {
             _repostedMessagesMonitoringService = repostedMessagesMonitoringService;
-            _logger = logger;
-            _timer = new Timer(OnTimer, default, Timeout.Infinite, Timeout.Infinite);
         }
+
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _timer.Change(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-
+            _timer = new Timer(RemoveDeletedMessages, default, TimerDelay, TimerPeriod);
             return Task.CompletedTask;
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
+
+        public Task StopAsync(CancellationToken cancellationToken)
         {
-            await _timer.DisposeAsync();
+            _timer?.Change(Timeout.Infinite, 0);
+            return Task.CompletedTask;
         }
 
-        private async void OnTimer(object? _)
+
+        public void Dispose()
         {
-            _timer.Change(Timeout.Infinite, Timeout.Infinite);
-
-            try
-            {
-                await _repostedMessagesMonitoringService.RemoveDeletedMessages();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "An exception is occurred during message monitoring");
-            }
-
-            _timer.Change(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            _timer?.Dispose();
         }
+
+
+        private async void RemoveDeletedMessages(object? _)
+        {
+            _timer?.Change(Timeout.Infinite, 0);
+
+            await _repostedMessagesMonitoringService.RemoveDeletedMessagesFromChannel();
+
+            _timer?.Change(TimerDelay, TimerPeriod);
+        }
+
+
+        private static readonly TimeSpan TimerDelay = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan TimerPeriod = TimeSpan.FromMinutes(1);
+
+
+        private readonly IRepostedMessagesMonitoringService _repostedMessagesMonitoringService;
+        private Timer? _timer;
     }
 }

@@ -35,7 +35,7 @@ namespace HrBot.Services
                 if (!isDeleted)
                     continue;
 
-                await Remove(repostedMessage);
+                await RemoveRepostedMessageFromChannel(repostedMessage);
                 _storage.Remove(repostedMessage);
 
                 _logger.LogInformation("Message from {ChatId} {MessageId} was deleted", repostedMessage.From.ChatId, repostedMessage.From.MessageId);
@@ -43,7 +43,7 @@ namespace HrBot.Services
         }
 
 
-        private async Task Remove(RepostedMessageInfo repostedMessage)
+        private async Task RemoveRepostedMessageFromChannel(RepostedMessageInfo repostedMessage)
         {
             var channeledMessageInfo = repostedMessage.To;
             await _telegram.DeleteMessageAsync(channeledMessageInfo.ChatId, channeledMessageInfo.MessageId);

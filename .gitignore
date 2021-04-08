@@ -7,3 +7,4 @@
 /HrBot/logs/*
 /HrBot/Configuration/appsettings.Development.json
 /HrBot/Configuration/appsettings.Production.json
+*.user

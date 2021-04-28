@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using HrBot.Models;
 using Telegram.Bot.Types;
@@ -34,7 +33,7 @@ namespace HrBot.Services
         }
 
 
-        public List<string> GetVacancyErrors(Message message)
+        public IReadOnlyCollection<string> GetVacancyErrors(Message message)
         {
             var errors = new List<string>();
             var tags = GetTags(message);

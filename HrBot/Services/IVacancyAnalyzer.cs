@@ -8,7 +8,7 @@ namespace HrBot.Services
     {
         MessageTypes GetMessageType(Message message);
 
-        List<string> GetVacancyErrors(Message message);
+        IReadOnlyCollection<string> GetVacancyErrors(Message message);
 
         bool HasMissingTags(Message message);
     }

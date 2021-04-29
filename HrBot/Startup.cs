@@ -23,14 +23,8 @@ namespace HrBot
             services.AddOptions();
 
             services.Configure<AppSettings>(Configuration.GetSection("Configuration"));
-            services.AddTransient<AppSettings>(ser => ser.GetRequiredService<IOptions<AppSettings>>().Value);
 
-            services.AddSingleton<ITelegramBotClient>(
-                x =>
-                {
-                    var settings = x.GetRequiredService<AppSettings>();
-                    return new TelegramBotClient(settings.BotToken);
-                });
+            services.AddSingleton<ITelegramBotClient>(_ => new TelegramBotClient(Configuration["Configuration:BotToken"]));
 
             services.AddTransient<IVacancyReposter, VacancyReposter>();
             services.AddTransient<IVacancyAnalyzer, VacancyAnalyzer>();
@@ -39,9 +33,9 @@ namespace HrBot
             services.AddTransient<IRepostedMessagesMonitoringService, RepostedMessagesMonitoringService>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IOptions<AppSettings> appSettingsOptions)
         {
-            app.UseTelegramBotWebHook();
+            app.UseTelegramBotWebHook(appSettingsOptions.Value.WebHookAddress);
             app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints => endpoints.MapControllers());

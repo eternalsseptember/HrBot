@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HrBot.Models;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace HrBot.Services
 {
-    internal class VacancyReposter : IVacancyReposter
+    public class VacancyReposter : IVacancyReposter
     {
         private readonly IMemoryCache _memoryCache;
         private readonly AppSettings _settings;
@@ -20,30 +22,27 @@ namespace HrBot.Services
         public VacancyReposter(
             IVacancyAnalyzer vacancyAnalyzer,
             ITelegramBotClient telegramBot,
-            AppSettings settings,
+            IOptions<AppSettings> settings,
             IMemoryCache memoryCache,
             IRepostedMessagesStorage repostedMessagesStorage)
         {
             _vacancyAnalyzer = vacancyAnalyzer;
             _telegramBot = telegramBot;
-            _settings = settings;
+            _settings = settings.Value;
             _memoryCache = memoryCache;
             _repostedMessagesStorage = repostedMessagesStorage;
         }
 
         public async Task TryRepost(Message message)
         {
-            var isVacancy = _vacancyAnalyzer.IsVacancy(message);
-            var isResume = _vacancyAnalyzer.IsResume(message);
-
-            if (!isVacancy && !isResume)
-            {
+            var messageType = _vacancyAnalyzer.GetMessageType(message);
+            if (messageType == MessageTypes.Chat)
                 return;
-            }
 
-            if (isVacancy)
+            if (messageType == MessageTypes.Vacancy)
             {
-                await SendVacancyWarnings(message);
+                if (_vacancyAnalyzer.HasMissingTags(message))
+                    await SendMissingTagsWarning(message);
             }
 
             var repostedMessage = await _telegramBot.SendTextMessageAsync(
@@ -63,17 +62,14 @@ namespace HrBot.Services
 
         public async Task TryEdit(Message message)
         {
-            var isVacancy = _vacancyAnalyzer.IsVacancy(message);
-            var isResume = _vacancyAnalyzer.IsResume(message);
-
-            if (!isVacancy && !isResume)
-            {
+            var messageType = _vacancyAnalyzer.GetMessageType(message);
+            if (messageType == MessageTypes.Chat)
                 return;
-            }
 
-            if (isVacancy)
+            if (messageType == MessageTypes.Vacancy)
             {
-                await TryDeleteWarningMessage(message);
+                if (!_vacancyAnalyzer.HasMissingTags(message))
+                    await TryDeleteMissingTagsWarning(message);
             }
 
             if (_memoryCache.TryGetValue(GetKey(message), out ChatMessageId repostedMessageIds))
@@ -86,46 +82,37 @@ namespace HrBot.Services
             }
         }
 
-        private async Task TryDeleteWarningMessage(Message message)
+        private async Task TryDeleteMissingTagsWarning(Message message)
         {
-            var vacancyErrors = _vacancyAnalyzer.GetVacancyErrors(message).ToList();
-            if (vacancyErrors.Count != 0)
-            {
-                return;
-            }
-
             var hasWarningMessage = _memoryCache.TryGetValue(
                 GetErrorKey(message),
                 out ChatMessageId warningMessageIds);
 
-            if (hasWarningMessage)
-            {
-                await _telegramBot.DeleteMessageAsync(
-                    warningMessageIds.ChatId,
-                    warningMessageIds.MessageId);
-            }
+            if (!hasWarningMessage)
+                return;
+
+            await _telegramBot.DeleteMessageAsync(
+                warningMessageIds.ChatId,
+                warningMessageIds.MessageId);
         }
 
-        private async Task SendVacancyWarnings(Message message)
+        private async Task SendMissingTagsWarning(Message message)
         {
-            var vacancyErrors = _vacancyAnalyzer.GetVacancyErrors(message).ToList();
-            if (vacancyErrors.Count > 0)
-            {
-                var errorMessage =
-                    "Здравствуйте! Кажется, вы прислали вакансию. " +
-                    "Согласно правилам нужно также указать следующие теги: \r\n" +
-                    $"{string.Join("\r\n", vacancyErrors.Select(x => x.Value))}" +
-                    "\r\n\r\nНе забудьте указать вилку: зарплатные ожидания от и до.";
+            var missingTagsKinds = _vacancyAnalyzer.GetVacancyErrors(message);
+            var errorText =
+                "Здравствуйте! Кажется, вы прислали вакансию. " +
+                "Согласно правилам нужно также указать следующие теги: \r\n" +
+                $"{string.Join("\r\n", missingTagsKinds.Select(x => x))}" +
+                "\r\n\r\nНе забудьте указать вилку: зарплатные ожидания от и до.";
 
-                var sentErrorMessage = await _telegramBot.SendTextMessageAsync(
-                    message.Chat.Id,
-                    errorMessage,
-                    replyToMessageId: message.MessageId);
+            var errorMessage = await _telegramBot.SendTextMessageAsync(
+                message.Chat.Id,
+                errorText,
+                replyToMessageId: message.MessageId);
 
-                _memoryCache.Set(
-                    GetErrorKey(message),
-                    new ChatMessageId(sentErrorMessage.Chat.Id, sentErrorMessage.MessageId));
-            }
+            _memoryCache.Set(
+                GetErrorKey(message),
+                new ChatMessageId(errorMessage.Chat.Id, errorMessage.MessageId));
         }
 
         private static string GetMessageWithAuthor(Message message)

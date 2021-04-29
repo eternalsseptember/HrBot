@@ -6,10 +6,10 @@ namespace HrBot.Services
 {
     public interface IVacancyAnalyzer
     {
-        bool IsVacancy(Message message);
+        MessageTypes GetMessageType(Message message);
 
-        bool IsResume(Message message);
+        IReadOnlyCollection<string> GetVacancyErrors(Message message);
 
-        IEnumerable<VacancyError> GetVacancyErrors(Message message);
+        bool HasMissingTags(Message message);
     }
 }

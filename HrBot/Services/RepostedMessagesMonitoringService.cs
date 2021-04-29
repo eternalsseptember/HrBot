@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using HrBot.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 
 namespace HrBot.Services
@@ -15,12 +16,12 @@ namespace HrBot.Services
 
         public RepostedMessagesMonitoringService(
             IRepostedMessagesStorage storage,
-            AppSettings settings,
+            IOptions<AppSettings> settings,
             ITelegramBotClient telegram,
             ILogger<RepostedMessagesMonitoringService> logger)
         {
             _storage = storage;
-            _settings = settings;
+            _settings = settings.Value;
             _telegram = telegram;
             _logger = logger;
         }
@@ -31,6 +32,7 @@ namespace HrBot.Services
 
             foreach (var repostedMessage in repostedMessages)
             {
+                // Is this correct? The method starts on timer already, also greater number of messages lead to slower response. Potential slow-down point
                 await Task.Delay(1000);
                 var isDeleted = await IsRepostedMessageDeletedInChat(repostedMessage);
 
@@ -58,8 +60,8 @@ namespace HrBot.Services
 
         private async Task<bool> IsRepostedMessageDeletedInChat(RepostedMessage repostedMessage)
         {
+            // Again, can't change it without debugging, probably checking message existence is enough 
             var technicalChatId = _settings.TechnicalChatId;
-            var result = true;
             try
             {
                 var forwarded = await _telegram.ForwardMessageAsync(
@@ -67,15 +69,16 @@ namespace HrBot.Services
                     repostedMessage.From.ChatId,
                     repostedMessage.From.MessageId,
                     true);
-                result = false;
                 await _telegram.DeleteMessageAsync(forwarded.Chat.Id, forwarded.MessageId);
+
+                return false;
             }
             catch (Exception exception) when(exception.Message == "Bad Request: message to forward not found")
             {
                 var e = exception;
             }
 
-            return result;
+            return true;
         }
     }
 }

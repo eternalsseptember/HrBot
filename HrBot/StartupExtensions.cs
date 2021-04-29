@@ -9,24 +9,24 @@ namespace HrBot
 {
     public static class StartupExtensions
     {
-        public static IApplicationBuilder UseTelegramBotWebHook(this IApplicationBuilder applicationBuilder)
+        public static IApplicationBuilder UseTelegramBotWebHook(this IApplicationBuilder applicationBuilder, string webHookAddress)
         {
             var services = applicationBuilder.ApplicationServices;
 
+            // Pretty sure that configuration could be made in IHostedService, but don't want to touch it without debugging
             var lifetime = services.GetRequiredService<IHostApplicationLifetime>();
 
             lifetime.ApplicationStarted.Register(
                 async () =>
                 {
                     var logger = services.GetRequiredService<ILogger<Startup>>();
-                    var address = services.GetRequiredService<AppSettings>().WebHookAddress;
 
                     logger.LogInformation("Removing WebHook");
                     await services.GetRequiredService<ITelegramBotClient>().DeleteWebhookAsync();
 
-                    logger.LogInformation($"Setting WebHook to {address}");
-                    await services.GetRequiredService<ITelegramBotClient>().SetWebhookAsync(address, maxConnections: 5);
-                    logger.LogInformation($"WebHook is set to {address}");
+                    logger.LogInformation($"Setting WebHook to {webHookAddress}");
+                    await services.GetRequiredService<ITelegramBotClient>().SetWebhookAsync(webHookAddress, maxConnections: 5);
+                    logger.LogInformation($"WebHook is set to {webHookAddress}");
 
                     var webHookInfo = await services.GetRequiredService<ITelegramBotClient>().GetWebhookInfoAsync();
                     logger.LogInformation($"WebHook info: {JsonConvert.SerializeObject(webHookInfo)}");

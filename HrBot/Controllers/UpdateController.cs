@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using HrBot.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -20,11 +21,11 @@ namespace HrBot.Controllers
         public UpdateController(
             ILogger<UpdateController> logger,
             IVacancyReposter vacancyReposter,
-            AppSettings appSettings)
+            IOptions<AppSettings> appSettings)
         {
             _logger = logger;
             _vacancyReposter = vacancyReposter;
-            _appSettings = appSettings;
+            _appSettings = appSettings.Value;
         }
 
         // POST api/update

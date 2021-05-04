@@ -1,73 +1,52 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using HrBot.Models;
 using Telegram.Bot.Types;
 
 namespace HrBot.Services
 {
-    internal class VacancyAnalyzer : IVacancyAnalyzer
+    public class VacancyAnalyzer : IVacancyAnalyzer
     {
-        private const string VacancyTag = "#вакансия";
-        private const string ResumeTag = "#резюме";
-        private readonly string[] _placeOfWorkTag = new[] {
-            "#удаленка", "#удалёнка", "#офис"
-        };
-        private readonly string[] _employmentTypeTag = new[] {
-            "#parttime", "#fulltime"
-        };
-
-
-        public MessageTypes GetMessageType(Message message)
+        private readonly string[] _employmentTypeTag = {"#parttime", "#fulltime"};
+        private readonly string[] _placeOfWorkTag = {"#удаленка", "#удалёнка", "#офис"};
+        
+        private readonly IMessageAnalyzer _messageAnalyzer;
+        
+        
+        public VacancyAnalyzer(IMessageAnalyzer messageAnalyzer)
         {
-            var tags = GetTags(message);
-            foreach (var tag in tags)
-                switch (tag)
-                {
-                    case VacancyTag:
-                        return MessageTypes.Vacancy;
-                    case ResumeTag:
-                        return MessageTypes.Resume;
-                }
-
-            return MessageTypes.Chat;
+            _messageAnalyzer = messageAnalyzer;
         }
 
 
-        public IReadOnlyCollection<string> GetVacancyErrors(Message message)
+        public string GetTagsMissingWarningMessage(Message message)
         {
-            var errors = new List<string>();
-            var tags = GetTags(message);
+            var missingTags = new List<string>(2);
+            var tags = _messageAnalyzer.GetTags(message);
 
             if (!tags.Any(x => _placeOfWorkTag.Contains(x)))
-                errors.Add("#удалёнка или #офис");
+                missingTags.Add("#удалёнка или #офис");
             
             if (!tags.Any(x => _employmentTypeTag.Contains(x)))
-                errors.Add("#parttime или #fulltime");
+                missingTags.Add("#parttime или #fulltime");
 
-            return errors;
+            if (!missingTags.Any())
+                return string.Empty;
+
+            return "Здравствуйте! Кажется, вы прислали вакансию. " +
+                "Согласно правилам нужно также указать следующие теги: \r\n" +
+                $"{string.Join("\r\n", missingTags.Select(x => x))}" +
+                "\r\n\r\nНе забудьте указать вилку: зарплатные ожидания от и до.";
         }
 
 
         public bool HasMissingTags(Message message)
         {
-            var tags = GetTags(message);
+            var tags = _messageAnalyzer.GetTags(message);
             
             if (!tags.Any(x => _placeOfWorkTag.Contains(x)))
                 return true;
             
             return !tags.Any(x => _employmentTypeTag.Contains(x));
-        }
-
-
-        private static List<string> GetTags(Message message)
-        {
-            if (message.EntityValues is null)
-                return new List<string>(0);
-
-            return message.EntityValues
-                .Where(x => x.StartsWith("#"))
-                .Select(x => x.ToLowerInvariant())
-                .ToList();
         }
     }
 }

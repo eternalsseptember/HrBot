@@ -8,28 +8,30 @@ namespace HrBot.Services
 {
     public class RepostedMessagesStorage : IRepostedMessagesStorage
     {
-        private readonly ConcurrentDictionary<ChatMessageId, RepostedMessage> _storage = new();
+        private readonly ConcurrentDictionary<MessageInfo, RepostedMessageInfo> _storage = new();
         private readonly TimeSpan _storageLimit = TimeSpan.FromHours(2);
 
-        public IReadOnlyCollection<RepostedMessage> GetAll()
+
+        public void Add(MessageInfo from, MessageInfo to, DateTimeOffset when)
         {
-            var toDelete = _storage.Values.Where(x => x.When < DateTimeOffset.Now.Add(-_storageLimit)).ToList();
+            _storage.TryAdd(from, new RepostedMessageInfo(from, to, when));
+        }
+
+
+        public IReadOnlyCollection<RepostedMessageInfo> Get()
+        {
+            var toDelete = _storage.Values
+                .Where(x => x.When < DateTimeOffset.Now.Add(-_storageLimit)).ToList();
             foreach (var message in toDelete)
-            {
-                _storage.TryRemove(message.From, out var _);
-            }
+                _storage.TryRemove(message.From, out _);
 
             return _storage.Values.ToList();
         }
 
-        public void Add(ChatMessageId from, ChatMessageId to, DateTimeOffset when)
-        {
-            _storage.TryAdd(from, new RepostedMessage(from, to, when));
-        }
 
-        public void Remove(RepostedMessage message)
+        public void Remove(RepostedMessageInfo message)
         {
-            _storage.TryRemove(message.From, out var _);
+            _storage.TryRemove(message.From, out _);
         }
     }
 }

@@ -4,6 +4,6 @@ namespace HrBot.Services
 {
     public interface IRepostedMessagesMonitoringService
     {
-        Task RemoveDeletedMessages();
+        Task RemoveDeletedMessagesFromChannel();
     }
 }

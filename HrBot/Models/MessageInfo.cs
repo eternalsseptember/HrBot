@@ -1,16 +1,16 @@
-﻿namespace HrBot.Services
+﻿namespace HrBot.Models
 {
-    public class ChatMessageId
+    public class MessageInfo
     {
         public long ChatId { get; }
 
         public int MessageId { get; }
 
-        public ChatMessageId(long chatId, int messageId)
+
+        public MessageInfo(long chatId, int messageId)
         {
             ChatId = chatId;
             MessageId = messageId;
-
         }
     }
 }

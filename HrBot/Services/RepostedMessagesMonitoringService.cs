@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using HrBot.Configuration;
 using HrBot.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,73 +10,66 @@ namespace HrBot.Services
 {
     public class RepostedMessagesMonitoringService : IRepostedMessagesMonitoringService
     {
-        private readonly AppSettings _settings;
+        private readonly ILogger<RepostedMessagesMonitoringService> _logger;
+        private readonly ChatOptions _options;
         private readonly IRepostedMessagesStorage _storage;
         private readonly ITelegramBotClient _telegram;
-        private readonly ILogger<RepostedMessagesMonitoringService> _logger;
+
 
         public RepostedMessagesMonitoringService(
-            IRepostedMessagesStorage storage,
-            IOptions<AppSettings> settings,
+            ILogger<RepostedMessagesMonitoringService> logger,
+            IOptions<ChatOptions> options,
             ITelegramBotClient telegram,
-            ILogger<RepostedMessagesMonitoringService> logger)
+            IRepostedMessagesStorage storage)
         {
-            _storage = storage;
-            _settings = settings.Value;
-            _telegram = telegram;
             _logger = logger;
+            _options = options.Value;
+            _storage = storage;
+            _telegram = telegram;
         }
 
-        public async Task RemoveDeletedMessages()
+
+        public async Task RemoveDeletedMessagesFromChannel()
         {
-            var repostedMessages = _storage.GetAll();
+            var repostedMessages = _storage.Get();
 
             foreach (var repostedMessage in repostedMessages)
             {
                 // Is this correct? The method starts on timer already, also greater number of messages lead to slower response. Potential slow-down point
                 await Task.Delay(1000);
-                var isDeleted = await IsRepostedMessageDeletedInChat(repostedMessage);
-
+                var isDeleted = await IsDeletedFromChat(repostedMessage);
                 if (!isDeleted)
-                {
                     continue;
-                }
 
-                await DeleteRepostedMessageFromChannel(repostedMessage);
+                await RemoveRepostedMessageFromChannel(repostedMessage);
                 _storage.Remove(repostedMessage);
 
-                _logger.LogInformation(
-                    "Message from {ChatId} {MessageId} was deleted",
-                    repostedMessage.From.ChatId,
-                    repostedMessage.From.MessageId);
+                _logger.LogInformation("Message from {ChatId} {MessageId} was deleted", repostedMessage.From.ChatId, repostedMessage.From.MessageId);
             }
         }
 
-        private async Task DeleteRepostedMessageFromChannel(RepostedMessage repostedMessage)
+
+        private async Task RemoveRepostedMessageFromChannel(RepostedMessageInfo repostedMessage)
         {
-            var channelMessage = repostedMessage.To;
-            
-            await _telegram.DeleteMessageAsync(channelMessage.ChatId, channelMessage.MessageId);
+            var channeledMessageInfo = repostedMessage.To;
+            await _telegram.DeleteMessageAsync(channeledMessageInfo.ChatId, channeledMessageInfo.MessageId);
         }
 
-        private async Task<bool> IsRepostedMessageDeletedInChat(RepostedMessage repostedMessage)
+
+        private async Task<bool> IsDeletedFromChat(RepostedMessageInfo repostedMessage)
         {
             // Again, can't change it without debugging, probably checking message existence is enough 
-            var technicalChatId = _settings.TechnicalChatId;
             try
             {
-                var forwarded = await _telegram.ForwardMessageAsync(
-                    technicalChatId,
-                    repostedMessage.From.ChatId,
-                    repostedMessage.From.MessageId,
-                    true);
+                var forwarded = await _telegram.ForwardMessageAsync(_options.TechnicalChatId, repostedMessage.From.ChatId, repostedMessage.From.MessageId,
+                    disableNotification: true);
                 await _telegram.DeleteMessageAsync(forwarded.Chat.Id, forwarded.MessageId);
 
                 return false;
             }
-            catch (Exception exception) when(exception.Message == "Bad Request: message to forward not found")
+            catch (Exception exception) when (exception.Message == "Bad Request: message to forward not found")
             {
-                var e = exception;
+                // Swallow deleted exception 
             }
 
             return true;

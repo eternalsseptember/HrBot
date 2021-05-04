@@ -27,7 +27,7 @@ namespace HrBot
             services.Configure<BotOptions>(Configuration.GetSection("BotOptions"));
             services.Configure<ChatOptions>(Configuration.GetSection("ChatOptions"));
 
-            services.AddSingleton<ITelegramBotClient>(_ => new TelegramBotClient(Configuration["Configuration:BotToken"]));
+            services.AddSingleton<ITelegramBotClient>(_ => new TelegramBotClient(Configuration["ChatOptions:BotToken"]));
 
             services.AddTransient<IMessageAnalyzer, MessageAnalyzer>();
             services.AddTransient<IVacancyReposter, VacancyReposter>();

@@ -14,6 +14,11 @@ namespace HrBot.Controllers
     [Route("api/hrupdate")]
     public class UpdateController : ControllerBase
     {
+        private readonly ChatOptions _options;
+        private readonly ILogger<UpdateController> _logger;
+        private readonly IVacancyReposter _vacancyReposter;
+
+
         public UpdateController(
             ILogger<UpdateController> logger,
             IOptions<ChatOptions> options,
@@ -76,10 +81,5 @@ namespace HrBot.Controllers
 
             return isNewMessageAllowed || isEditedMessageAllowed;
         }
-
-
-        private readonly ChatOptions _options;
-        private readonly ILogger<UpdateController> _logger;
-        private readonly IVacancyReposter _vacancyReposter;
     }
 }

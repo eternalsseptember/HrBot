@@ -10,6 +10,12 @@ namespace HrBot.Services
 {
     public class RepostedMessagesMonitoringService : IRepostedMessagesMonitoringService
     {
+        private readonly ILogger<RepostedMessagesMonitoringService> _logger;
+        private readonly ChatOptions _options;
+        private readonly IRepostedMessagesStorage _storage;
+        private readonly ITelegramBotClient _telegram;
+
+
         public RepostedMessagesMonitoringService(
             ILogger<RepostedMessagesMonitoringService> logger,
             IOptions<ChatOptions> options,
@@ -68,11 +74,5 @@ namespace HrBot.Services
 
             return true;
         }
-
-
-        private readonly ILogger<RepostedMessagesMonitoringService> _logger;
-        private readonly ChatOptions _options;
-        private readonly IRepostedMessagesStorage _storage;
-        private readonly ITelegramBotClient _telegram;
     }
 }

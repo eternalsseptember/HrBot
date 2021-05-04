@@ -6,6 +6,12 @@ namespace HrBot.Services
 {
     public class VacancyAnalyzer : IVacancyAnalyzer
     {
+        private readonly string[] _employmentTypeTag = {"#parttime", "#fulltime"};
+        private readonly string[] _placeOfWorkTag = {"#удаленка", "#удалёнка", "#офис"};
+        
+        private readonly IMessageAnalyzer _messageAnalyzer;
+        
+        
         public VacancyAnalyzer(IMessageAnalyzer messageAnalyzer)
         {
             _messageAnalyzer = messageAnalyzer;
@@ -42,12 +48,5 @@ namespace HrBot.Services
             
             return !tags.Any(x => _employmentTypeTag.Contains(x));
         }
-
-        
-        private readonly string[] _employmentTypeTag = {"#parttime", "#fulltime"};
-        private readonly string[] _placeOfWorkTag = {"#удаленка", "#удалёнка", "#офис"};
-        
-        
-        private readonly IMessageAnalyzer _messageAnalyzer;
     }
 }

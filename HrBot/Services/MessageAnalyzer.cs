@@ -7,6 +7,10 @@ namespace HrBot.Services
 {
     public class MessageAnalyzer : IMessageAnalyzer
     {
+        private const string ResumeTag = "#резюме";
+        private const string VacancyTag = "#вакансия";
+
+
         public List<string> GetTags(Message message)
         {
             if (message.EntityValues is null)
@@ -33,9 +37,5 @@ namespace HrBot.Services
 
             return MessageTypes.Chat;
         }
-
-
-        private const string ResumeTag = "#резюме";
-        private const string VacancyTag = "#вакансия";
     }
 }

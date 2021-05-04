@@ -8,6 +8,11 @@ namespace HrBot.Services
 {
     public class RepostedMessagesMonitoringHostedService : IHostedService
     {
+        private readonly ILogger<RepostedMessagesMonitoringHostedService> _logger;
+        private readonly IRepostedMessagesMonitoringService _repostedMessagesMonitoringService;
+        private readonly Timer _timer;
+
+
         public RepostedMessagesMonitoringHostedService(
             IRepostedMessagesMonitoringService repostedMessagesMonitoringService,
             ILogger<RepostedMessagesMonitoringHostedService> logger)
@@ -47,10 +52,5 @@ namespace HrBot.Services
 
             _timer.Change(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         }
-
-
-        private readonly ILogger<RepostedMessagesMonitoringHostedService> _logger;
-        private readonly IRepostedMessagesMonitoringService _repostedMessagesMonitoringService;
-        private readonly Timer _timer;
     }
 }

@@ -13,6 +13,18 @@ namespace HrBot.Services
 {
     public class VacancyReposter : IVacancyReposter
     {
+        private static string GetErrorKey(Message message) => $"ErrorMessage_{message.Chat.Id}_{message.MessageId}";
+        
+        private static string GetMessageKey(Message message) => $"RepostedMessage_{message.Chat.Id}_{message.MessageId}";
+        
+        private readonly IMemoryCache _memoryCache;
+        private readonly IMessageAnalyzer _messageAnalyzer;
+        private readonly IRepostedMessagesStorage _repostedMessagesStorage;
+        private readonly ChatOptions _options;
+        private readonly ITelegramBotClient _telegramBot;
+        private readonly IVacancyAnalyzer _vacancyAnalyzer;
+
+
         public VacancyReposter(
             IMemoryCache memoryCache,
             IOptions<ChatOptions> options,
@@ -120,19 +132,5 @@ namespace HrBot.Services
 
             return string.Join(" ", names);
         }
-
-
-        private static string GetErrorKey(Message message) => $"ErrorMessage_{message.Chat.Id}_{message.MessageId}";
-
-
-        private static string GetMessageKey(Message message) => $"RepostedMessage_{message.Chat.Id}_{message.MessageId}";
-
-
-        private readonly IMemoryCache _memoryCache;
-        private readonly IMessageAnalyzer _messageAnalyzer;
-        private readonly IRepostedMessagesStorage _repostedMessagesStorage;
-        private readonly ChatOptions _options;
-        private readonly ITelegramBotClient _telegramBot;
-        private readonly IVacancyAnalyzer _vacancyAnalyzer;
     }
 }

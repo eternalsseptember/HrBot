@@ -8,6 +8,10 @@ namespace HrBot.Services
 {
     public class RepostedMessagesStorage : IRepostedMessagesStorage
     {
+        private readonly ConcurrentDictionary<MessageInfo, RepostedMessageInfo> _storage = new();
+        private readonly TimeSpan _storageLimit = TimeSpan.FromHours(2);
+
+
         public void Add(MessageInfo from, MessageInfo to, DateTimeOffset when)
         {
             _storage.TryAdd(from, new RepostedMessageInfo(from, to, when));
@@ -29,9 +33,5 @@ namespace HrBot.Services
         {
             _storage.TryRemove(message.From, out _);
         }
-
-
-        private readonly ConcurrentDictionary<MessageInfo, RepostedMessageInfo> _storage = new();
-        private readonly TimeSpan _storageLimit = TimeSpan.FromHours(2);
     }
 }

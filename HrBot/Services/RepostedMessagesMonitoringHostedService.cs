@@ -47,7 +47,7 @@ namespace HrBot.Services
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "An exception is occurred during message monitoring: {Message}", e.Message);
+                _logger.LogError(e, "An exception is occurred during message monitoring");
             }
 
             _timer.Change(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));

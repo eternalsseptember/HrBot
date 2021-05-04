@@ -18,7 +18,7 @@ namespace HrBot.Services
         }
 
 
-        public List<RepostedMessageInfo> Get()
+        public IReadOnlyCollection<RepostedMessageInfo> Get()
         {
             var toDelete = _storage.Values
                 .Where(x => x.When < DateTimeOffset.Now.Add(-_storageLimit)).ToList();

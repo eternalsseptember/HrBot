@@ -7,7 +7,8 @@ namespace HrBot.Services
     public interface IRepostedMessagesStorage
     {
         void Add(MessageInfo from, MessageInfo to, DateTimeOffset when);
-        List<RepostedMessageInfo> Get();
+
+        IReadOnlyCollection<RepostedMessageInfo> Get();
 
         void Remove(RepostedMessageInfo repostedMessage);
     }

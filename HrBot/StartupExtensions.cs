@@ -35,7 +35,7 @@ namespace HrBot
             lifetime.ApplicationStopping.Register(
                 () =>
                 {
-                    var logger = services.GetService<ILogger<Startup>>();
+                    var logger = services.GetRequiredService<ILogger<Startup>>();
 
                     services.GetRequiredService<ITelegramBotClient>().DeleteWebhook().Wait();
                     logger.LogInformation("WebHook removed");

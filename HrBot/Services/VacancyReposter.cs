@@ -72,7 +72,8 @@ namespace HrBot.Services
                     await TryDeleteMissingTagsWarning(message);
             }
 
-            if (_memoryCache.TryGetValue(GetKey(message), out ChatMessageId repostedMessageIds))
+            if (_memoryCache.TryGetValue(GetKey(message), out ChatMessageId? data)
+                && data is {} repostedMessageIds)
             {
                 await _telegramBot.EditMessageText(
                     repostedMessageIds.ChatId,
@@ -84,16 +85,13 @@ namespace HrBot.Services
 
         private async Task TryDeleteMissingTagsWarning(Message message)
         {
-            var hasWarningMessage = _memoryCache.TryGetValue(
-                GetErrorKey(message),
-                out ChatMessageId warningMessageIds);
-
-            if (!hasWarningMessage)
-                return;
-
-            await _telegramBot.DeleteMessage(
-                warningMessageIds.ChatId,
-                warningMessageIds.MessageId);
+            if (_memoryCache.TryGetValue(GetErrorKey(message), out ChatMessageId? data)
+                && data is { } warningMessageIds)
+            {
+                await _telegramBot.DeleteMessage(
+                    warningMessageIds.ChatId,
+                    warningMessageIds.MessageId);
+            }
         }
 
         private async Task SendMissingTagsWarning(Message message)

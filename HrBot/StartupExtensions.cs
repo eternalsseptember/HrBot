@@ -22,13 +22,13 @@ namespace HrBot
                     var logger = services.GetRequiredService<ILogger<Startup>>();
 
                     logger.LogInformation("Removing WebHook");
-                    await services.GetRequiredService<ITelegramBotClient>().DeleteWebhookAsync();
+                    await services.GetRequiredService<ITelegramBotClient>().DeleteWebhook();
 
                     logger.LogInformation($"Setting WebHook to {webHookAddress}");
-                    await services.GetRequiredService<ITelegramBotClient>().SetWebhookAsync(webHookAddress, maxConnections: 5);
+                    await services.GetRequiredService<ITelegramBotClient>().SetWebhook(webHookAddress, maxConnections: 5);
                     logger.LogInformation($"WebHook is set to {webHookAddress}");
 
-                    var webHookInfo = await services.GetRequiredService<ITelegramBotClient>().GetWebhookInfoAsync();
+                    var webHookInfo = await services.GetRequiredService<ITelegramBotClient>().GetWebhookInfo();
                     logger.LogInformation($"WebHook info: {JsonConvert.SerializeObject(webHookInfo)}");
                 });
 
@@ -37,7 +37,7 @@ namespace HrBot
                 {
                     var logger = services.GetService<ILogger<Startup>>();
 
-                    services.GetRequiredService<ITelegramBotClient>().DeleteWebhookAsync().Wait();
+                    services.GetRequiredService<ITelegramBotClient>().DeleteWebhook().Wait();
                     logger.LogInformation("WebHook removed");
                 });
 

@@ -55,7 +55,7 @@ namespace HrBot.Services
         {
             var channelMessage = repostedMessage.To;
             
-            await _telegram.DeleteMessageAsync(channelMessage.ChatId, channelMessage.MessageId);
+            await _telegram.DeleteMessage(channelMessage.ChatId, channelMessage.MessageId);
         }
 
         private async Task<bool> IsRepostedMessageDeletedInChat(RepostedMessage repostedMessage)
@@ -64,12 +64,12 @@ namespace HrBot.Services
             var technicalChatId = _settings.TechnicalChatId;
             try
             {
-                var forwarded = await _telegram.ForwardMessageAsync(
+                var forwarded = await _telegram.ForwardMessage(
                     technicalChatId,
                     repostedMessage.From.ChatId,
                     repostedMessage.From.MessageId,
-                    true);
-                await _telegram.DeleteMessageAsync(forwarded.Chat.Id, forwarded.MessageId);
+                    disableNotification: true);
+                await _telegram.DeleteMessage(forwarded.Chat.Id, forwarded.MessageId);
 
                 return false;
             }

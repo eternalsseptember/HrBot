@@ -45,7 +45,7 @@ namespace HrBot.Services
                     await SendMissingTagsWarning(message);
             }
 
-            var repostedMessage = await _telegramBot.SendTextMessageAsync(
+            var repostedMessage = await _telegramBot.SendMessage(
                 _settings.RepostToChannelId,
                 GetMessageWithAuthor(message),
                 ParseMode.Html);
@@ -74,7 +74,7 @@ namespace HrBot.Services
 
             if (_memoryCache.TryGetValue(GetKey(message), out ChatMessageId repostedMessageIds))
             {
-                await _telegramBot.EditMessageTextAsync(
+                await _telegramBot.EditMessageText(
                     repostedMessageIds.ChatId,
                     repostedMessageIds.MessageId,
                     GetMessageWithAuthor(message),
@@ -91,7 +91,7 @@ namespace HrBot.Services
             if (!hasWarningMessage)
                 return;
 
-            await _telegramBot.DeleteMessageAsync(
+            await _telegramBot.DeleteMessage(
                 warningMessageIds.ChatId,
                 warningMessageIds.MessageId);
         }
@@ -105,10 +105,10 @@ namespace HrBot.Services
                 $"{string.Join("\r\n", missingTagsKinds.Select(x => x))}" +
                 "\r\n\r\nНе забудьте указать вилку: зарплатные ожидания от и до.";
 
-            var errorMessage = await _telegramBot.SendTextMessageAsync(
+            var errorMessage = await _telegramBot.SendMessage(
                 message.Chat.Id,
                 errorText,
-                replyToMessageId: message.MessageId);
+                replyParameters: new ReplyParameters { MessageId = message.MessageId });
 
             _memoryCache.Set(
                 GetErrorKey(message),
@@ -117,7 +117,7 @@ namespace HrBot.Services
 
         private static string GetMessageWithAuthor(Message message)
         {
-            var authorId = message.From.Id;
+            var authorId = message.From?.Id;
             var newMessageWithAuthor =
                 $"{message.Text}\n\n<a href=\"tg://user?id={authorId}\">{GetPrettyName(message.From)}</a>";
             return newMessageWithAuthor;
@@ -127,8 +127,10 @@ namespace HrBot.Services
 
         private static string GetErrorKey(Message message) => $"ErrorMessage_{message.Chat.Id}_{message.MessageId}";
 
-        private static string GetPrettyName(User user)
+        private static string GetPrettyName(User? user)
         {
+            if (user == null) return "Unknown";
+
             var names = new List<string>(3);
 
             if (!string.IsNullOrWhiteSpace(user.FirstName))

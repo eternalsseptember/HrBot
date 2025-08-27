@@ -39,22 +39,22 @@ namespace HrBot.Controllers
 
             try
             {
-                if (update.Type == UpdateType.Message)
+                if (update is { Type: UpdateType.Message, Message: {} message })
                 {
                     _logger.LogInformation(
                         "A message from received from {ChatId} {MessageId} {UserId}",
-                        update.Message.Chat.Id,
-                        update.Message.MessageId,
-                        update.Message.From.Id);
+                        message.Chat.Id,
+                        message.MessageId,
+                        message.From?.Id);
                     await _vacancyReposter.TryRepost(update.Message);
                 } 
-                else if (update.Type == UpdateType.EditedMessage)
+                else if (update is { Type: UpdateType.EditedMessage, EditedMessage: {} editedMessage })
                 {
                     _logger.LogInformation(
                         "An edited message received from {ChatId} {MessageId} {UserId}",
-                        update.EditedMessage.Chat.Id,
-                        update.EditedMessage.MessageId,
-                        update.EditedMessage.From.Id);
+                        editedMessage.Chat.Id,
+                        editedMessage.MessageId,
+                        editedMessage.From?.Id);
                     await _vacancyReposter.TryEdit(update.EditedMessage);
                 }
             }

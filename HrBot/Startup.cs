@@ -1,8 +1,7 @@
+using HrBot.Services;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using HrBot.Services;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 
@@ -24,7 +23,7 @@ namespace HrBot
 
             services.Configure<AppSettings>(Configuration.GetSection("Configuration"));
 
-            services.AddSingleton<ITelegramBotClient>(_ => new TelegramBotClient(Configuration["Configuration:BotToken"]));
+            services.AddSingleton<ITelegramBotClient>(_ => new TelegramBotClient(Configuration["Configuration:BotToken"]!));
 
             services.AddTransient<IVacancyReposter, VacancyReposter>();
             services.AddTransient<IVacancyAnalyzer, VacancyAnalyzer>();

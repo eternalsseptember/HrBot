@@ -2,6 +2,7 @@ using HrBot.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 
@@ -18,7 +19,7 @@ namespace HrBot
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddNewtonsoftJson();
+            services.AddControllers();
             services.AddOptions();
 
             services.Configure<AppSettings>(Configuration.GetSection("Configuration"));
@@ -32,9 +33,13 @@ namespace HrBot
             services.AddTransient<IRepostedMessagesMonitoringService, RepostedMessagesMonitoringService>();
         }
 
-        public void Configure(IApplicationBuilder app, IOptions<AppSettings> appSettingsOptions)
+        public void Configure(IApplicationBuilder app, IOptions<AppSettings> appSettingsOptions, IHostEnvironment env)
         {
-            app.UseTelegramBotWebHook(appSettingsOptions.Value.WebHookAddress);
+            if (!env.IsEnvironment("Testing"))
+            {
+                app.UseTelegramBotWebHook(appSettingsOptions.Value.WebHookAddress);
+            }
+
             app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints => endpoints.MapControllers());

@@ -1,11 +1,13 @@
 /.vs/*
 /.idea/
-/HrBot/obj/*
-/HrBot/bin/*
 /HrBot/appsettings.Production.json
 /HrBot/appsettings.Development.json
 /HrBot/HrBot.csproj.user
 /HrBot/logs/*
 /HrBot/Configuration/appsettings.Development.json
 /HrBot/Configuration/appsettings.Production.json
+
+obj/
+bin/
+
 *.user
